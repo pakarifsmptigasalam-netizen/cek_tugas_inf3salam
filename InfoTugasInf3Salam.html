@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cek Tugas Siswa</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #hasil { margin-top: 20px; }
+        .belum { color: red; font-weight: bold; }
+        .sudah { color: green; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>Cek Status Tugas</h3>
+        <input type="text" id="nisInput" placeholder="Masukkan NIS Anda...">
+        <button onclick="cariTugas()">Cek Sekarang</button>
+        <div id="hasil"></div>
+    </div>
+
+    <script>
+        async function cariTugas() {
+            const nis = document.getElementById('nisInput').value;
+            const hasilDiv = document.getElementById('hasil');
+            hasilDiv.innerHTML = "Sedang mencari...";
+
+            // Ganti URL_WEB_APP dengan URL dari Google Apps Script tadi
+            const response = await fetch('URL_WEB_APP_ANDA');
+            const data = await response.json();
+            
+            const siswa = data.find(s => s.nis == nis);
+            if(siswa) {
+                hasilDiv.innerHTML = `<strong>Nama:</strong> ${siswa.nama}<br>
+                                      <strong>Status Tugas:</strong> <span class="${siswa.status == 'Belum' ? 'belum' : 'sudah'}">${siswa.status}</span>`;
+            } else {
+                hasilDiv.innerHTML = "<span class='belum'>Data tidak ditemukan.</span>";
+            }
+        }
+    </script>
+</body>
+</html>
