@@ -9,78 +9,53 @@
         .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
         h2 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
         p.subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; font-size: 14px; }
-        
         .input-group { margin-bottom: 20px; }
         input { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: border-color 0.3s; }
         input:focus { border-color: #3498db; outline: none; }
-        
         button { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; transition: background 0.3s; }
         button:hover { background: #219150; }
-        
         #loading { display: none; text-align: center; margin-top: 15px; color: #3498db; font-weight: bold; }
-        
         #hasil { margin-top: 25px; display: none; animation: fadeIn 0.5s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
         .nama-siswa { background: #3498db; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 18px; }
-        
         table { width: 100%; border-collapse: collapse; background: #fff; }
         th, td { border: 1px solid #dfe6e9; padding: 12px; text-align: left; font-size: 15px; }
         th { background-color: #f8f9fa; color: #636e72; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
-        
         .status-cek { font-weight: bold; text-align: center; }
         .sudah { color: #27ae60; background: #eafaf1; }
         .belum { color: #e74c3c; background: #fdedec; }
-        .kosong { color: #95a5a6; background: #f8f9fa; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Info Tugas</h2>
-    <p class="subtitle">Informatika - Fase D (Kelas 8)</p>
-    
+    <p class="subtitle">Informatika - Fase D (SMPN 3 Salam)</p>
     <div class="input-group">
-        <input type="number" id="inputNIS" placeholder="Masukkan NIS Anda (Contoh: 4480)" onkeypress="handleKeyPress(event)">
+        <input type="number" id="inputNIS" placeholder="Masukkan NIS (Contoh: 4480)" onkeypress="if(event.keyCode === 13) cekTugas()">
     </div>
-    
     <button onclick="cekTugas()">Cek Sekarang</button>
-    
     <div id="loading">Menghubungkan ke database...</div>
-    
     <div id="hasil">
         <div id="namaSiswa" class="nama-siswa"></div>
-        <table id="tabelTugas">
+        <table>
             <thead>
-                <tr>
-                    <th>Materi / Tugas</th>
-                    <th>Status</th>
-                </tr>
+                <tr><th>Materi</th><th>Status</th></tr>
             </thead>
-            <tbody id="isiTabel">
-                </tbody>
+            <tbody id="isiTabel"></tbody>
         </table>
     </div>
 </div>
 
 <script>
-    function handleKeyPress(e) {
-        if(e.keyCode === 13) { cekTugas(); }
-    }
-
     async function cekTugas() {
-        const nis = document.getElementById('inputNIS').value.trim();
+        const nisInput = document.getElementById('inputNIS').value.trim();
         const hasilDiv = document.getElementById('hasil');
         const loading = document.getElementById('loading');
         const isiTabel = document.getElementById('isiTabel');
-        
-        // GANTI DENGAN URL EXEC TERBARU BAPAK
         const webAppUrl = 'https://script.google.com/macros/s/AKfycbxmvw6Boukuc9fO1MQA6-Qm58BWjFMOo1p5RrIA9PskwbqcyW2TeZcka3-hyyR8RlgV/exec';
 
-        if(!nis) {
-            alert("Silakan isi NIS terlebih dahulu, Pak!");
-            return;
-        }
+        if(!nisInput) return alert("Isi NIS dulu, Pak!");
 
         loading.style.display = "block";
         hasilDiv.style.display = "none";
@@ -88,48 +63,27 @@
         try {
             const response = await fetch(webAppUrl);
             const data = await response.json();
-            const siswa = data.find(s => s.nis === nis);
+            const siswa = data.find(s => String(s.nis) === nisInput);
 
             loading.style.display = "none";
 
             if(siswa) {
                 document.getElementById('namaSiswa').innerText = siswa.nama;
-                
-                // Hapus isi tabel lama
                 isiTabel.innerHTML = "";
-                
-                // Buat baris otomatis berdasarkan jumlah tugas di spreadsheet
                 for (const [judul, status] of Object.entries(siswa.tugas)) {
                     const row = isiTabel.insertRow();
-                    const cellJudul = row.insertCell(0);
-                    const cellStatus = row.insertCell(1);
-                    
-                    cellJudul.innerText = judul;
-                    cellStatus.innerText = status;
-                    
-                    // Pewarnaan otomatis
-                    const s = status.toLowerCase();
-                    if(s.includes('sudah')) {
-                        cellStatus.className = 'status-cek sudah';
-                    } else if(s === '-' || s === '') {
-                        cellStatus.className = 'status-cek kosong';
-                        cellStatus.innerText = 'Belum Ada';
-                    } else {
-                        cellStatus.className = 'status-cek belum';
-                    }
+                    const s = (status || "").toLowerCase();
+                    row.innerHTML = `<td>${judul}</td><td class="status-cek ${s.includes('sudah') ? 'sudah' : 'belum'}">${status || 'Belum'}</td>`;
                 }
-
                 hasilDiv.style.display = "block";
             } else {
-                alert("NIS " + nis + " tidak ditemukan. Pastikan nomor sudah benar.");
+                alert("NIS " + nisInput + " tidak ditemukan.");
             }
         } catch (error) {
             loading.style.display = "none";
-            alert("Gagal mengambil data. Pastikan URL Apps Script sudah benar dan izin akses diatur ke 'Anyone'.");
-            console.error(error);
+            alert("Gagal mengambil data. Pastikan Apps Script sudah 'Anyone'.");
         }
     }
 </script>
-
 </body>
 </html>
