@@ -3,60 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cek Tugas Siswa</title>
+    <title>Monitoring Tugas Informatika - SMPN 3 Salam</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .box { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 100%; max-width: 350px; }
-        h2 { text-align: center; color: #1a73e8; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        #hasil { margin-top: 20px; padding: 10px; border-radius: 5px; display: none; background: #f8f9fa; }
-        .loading { text-align: center; display: none; color: #666; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f7; display: flex; justify-content: center; padding: 20px; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #7f8c8d; margin-bottom: 25px; font-size: 14px; }
+        
+        .input-group { margin-bottom: 20px; }
+        input { width: 100%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 16px; transition: border-color 0.3s; }
+        input:focus { border-color: #3498db; outline: none; }
+        
+        button { width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 16px; transition: background 0.3s; }
+        button:hover { background: #219150; }
+        
+        #loading { display: none; text-align: center; margin-top: 15px; color: #3498db; font-weight: bold; }
+        
+        #hasil { margin-top: 25px; display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .nama-siswa { background: #3498db; color: white; padding: 12px; border-radius: 8px; text-align: center; font-weight: bold; margin-bottom: 15px; font-size: 18px; }
+        
+        table { width: 100%; border-collapse: collapse; background: #fff; }
+        th, td { border: 1px solid #dfe6e9; padding: 12px; text-align: left; font-size: 15px; }
+        th { background-color: #f8f9fa; color: #636e72; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
+        
+        .status-cek { font-weight: bold; text-align: center; }
+        .sudah { color: #27ae60; background: #eafaf1; }
+        .belum { color: #e74c3c; background: #fdedec; }
+        .kosong { color: #95a5a6; background: #f8f9fa; }
     </style>
 </head>
 <body>
 
-<div class="box">
+<div class="container">
     <h2>Info Tugas</h2>
-    <input type="text" id="inputNIS" placeholder="Masukkan NIS Siswa (Contoh: 4480)">
-    <button onclick="cek()">Cek Sekarang</button>
+    <p class="subtitle">Informatika - Fase D (Kelas 8)</p>
     
-    <div id="loading" class="loading">Sabar ya, sedang mengambil data...</div>
-    <div id="hasil"></div>
+    <div class="input-group">
+        <input type="number" id="inputNIS" placeholder="Masukkan NIS Anda (Contoh: 4480)" onkeypress="handleKeyPress(event)">
+    </div>
+    
+    <button onclick="cekTugas()">Cek Sekarang</button>
+    
+    <div id="loading">Menghubungkan ke database...</div>
+    
+    <div id="hasil">
+        <div id="namaSiswa" class="nama-siswa"></div>
+        <table id="tabelTugas">
+            <thead>
+                <tr>
+                    <th>Materi / Tugas</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="isiTabel">
+                </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-    async function cek() {
+    function handleKeyPress(e) {
+        if(e.keyCode === 13) { cekTugas(); }
+    }
+
+    async function cekTugas() {
         const nis = document.getElementById('inputNIS').value.trim();
-        const hasil = document.getElementById('hasil');
+        const hasilDiv = document.getElementById('hasil');
         const loading = document.getElementById('loading');
+        const isiTabel = document.getElementById('isiTabel');
         
-        if(!nis) return alert("Isi NIS dulu, Pak!");
+        // GANTI DENGAN URL EXEC TERBARU BAPAK
+        const webAppUrl = 'https://script.google.com/macros/s/AKfycbxmvw6Boukuc9fO1MQA6-Qm58BWjFMOo1p5RrIA9PskwbqcyW2TeZcka3-hyyR8RlgV/exec';
+
+        if(!nis) {
+            alert("Silakan isi NIS terlebih dahulu, Pak!");
+            return;
+        }
 
         loading.style.display = "block";
-        hasil.style.display = "none";
+        hasilDiv.style.display = "none";
 
         try {
-            // TEMPEL URL HASIL DEPLOY BAPAK DI SINI
-            const webAppUrl = 'https://script.google.com/macros/s/AKfycbxmvw6Boukuc9fO1MQA6-Qm58BWjFMOo1p5RrIA9PskwbqcyW2TeZcka3-hyyR8RlgV/exec';
-            
             const response = await fetch(webAppUrl);
             const data = await response.json();
-            
             const siswa = data.find(s => s.nis === nis);
-            
+
             loading.style.display = "none";
-            hasil.style.display = "block";
 
             if(siswa) {
-                hasil.innerHTML = `<strong>Nama:</strong> ${siswa.nama}<br>
-                                   <strong>Status:</strong> ${siswa.status}`;
+                document.getElementById('namaSiswa').innerText = siswa.nama;
+                
+                // Hapus isi tabel lama
+                isiTabel.innerHTML = "";
+                
+                // Buat baris otomatis berdasarkan jumlah tugas di spreadsheet
+                for (const [judul, status] of Object.entries(siswa.tugas)) {
+                    const row = isiTabel.insertRow();
+                    const cellJudul = row.insertCell(0);
+                    const cellStatus = row.insertCell(1);
+                    
+                    cellJudul.innerText = judul;
+                    cellStatus.innerText = status;
+                    
+                    // Pewarnaan otomatis
+                    const s = status.toLowerCase();
+                    if(s.includes('sudah')) {
+                        cellStatus.className = 'status-cek sudah';
+                    } else if(s === '-' || s === '') {
+                        cellStatus.className = 'status-cek kosong';
+                        cellStatus.innerText = 'Belum Ada';
+                    } else {
+                        cellStatus.className = 'status-cek belum';
+                    }
+                }
+
+                hasilDiv.style.display = "block";
             } else {
-                hasil.innerHTML = `<span style="color:red">NIS ${nis} tidak ditemukan.</span>`;
+                alert("NIS " + nis + " tidak ditemukan. Pastikan nomor sudah benar.");
             }
-        } catch (err) {
+        } catch (error) {
             loading.style.display = "none";
-            alert("Koneksi gagal. Cek kembali URL Apps Script.");
+            alert("Gagal mengambil data. Pastikan URL Apps Script sudah benar dan izin akses diatur ke 'Anyone'.");
+            console.error(error);
         }
     }
 </script>
