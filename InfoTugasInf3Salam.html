@@ -1,44 +1,86 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Cek Tugas Siswa</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cek Tugas Informatika - SMPN 3 Salam</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
-        .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
-        #hasil { margin-top: 20px; }
-        .belum { color: red; font-weight: bold; }
-        .sudah { color: green; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f7; padding: 20px; display: flex; justify-content: center; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #2c3e50; text-align: center; margin-bottom: 20px; font-size: 1.5rem; }
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #666; font-size: 0.9rem; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1rem; transition: 0.3s; }
+        input:focus { border-color: #3498db; outline: none; }
+        button { width: 100%; padding: 12px; background-color: #3498db; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background-color: #2980b9; }
+        #hasil { margin-top: 25px; padding: 15px; border-radius: 8px; display: none; line-height: 1.6; }
+        .info-nama { font-weight: bold; color: #2c3e50; border-bottom: 1px solid #eee; padding-bottom: 5px; margin-bottom: 10px; }
+        .status-box { padding: 10px; border-radius: 5px; text-align: center; font-weight: bold; margin-top: 10px; }
+        .belum { background-color: #ffebee; color: #c62828; }
+        .sudah { background-color: #e8f5e9; color: #2e7d32; }
+        .loading { text-align: center; color: #7f8c8d; font-style: italic; display: none; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h3>Cek Status Tugas</h3>
-        <input type="text" id="nisInput" placeholder="Masukkan NIS Anda...">
-        <button onclick="cariTugas()">Cek Sekarang</button>
-        <div id="hasil"></div>
+
+<div class="container">
+    <h2>Cek Status Tugas</h2>
+    <div class="input-group">
+        <label for="nisInput">Masukkan NIS Siswa:</label>
+        <input type="number" id="nisInput" placeholder="Contoh: 4480" onkeypress="handleKeyPress(event)">
     </div>
+    <button onclick="cariData()">Cek Sekarang</button>
 
-    <script>
-        async function cariTugas() {
-            const nis = document.getElementById('nisInput').value;
-            const hasilDiv = document.getElementById('hasil');
-            hasilDiv.innerHTML = "Sedang mencari...";
+    <div id="loading" class="loading">Menghubungkan ke database...</div>
+    <div id="hasil"></div>
+</div>
 
-            // Ganti URL_WEB_APP dengan URL dari Google Apps Script tadi
-            const response = await fetch('URL_WEB_APP_ANDA');
+<script>
+    function handleKeyPress(e) {
+        if (e.keyCode === 13) { cariData(); }
+    }
+
+    async function cariData() {
+        const nis = document.getElementById('nisInput').value;
+        const hasilDiv = document.getElementById('hasil');
+        const loading = document.getElementById('loading');
+
+        if (!nis) { alert("Silakan isi NIS terlebih dahulu!"); return; }
+
+        loading.style.display = "block";
+        hasilDiv.style.display = "none";
+
+        try {
+            // GANTI URL DI BAWAH INI DENGAN URL WEB APP BAPAK (yang berakhiran /exec)
+            const url = 'URL_WEB_APP_BAPAK_DI_SINI';
+            
+            const response = await fetch(url);
             const data = await response.json();
             
-            const siswa = data.find(s => s.nis == nis);
-            if(siswa) {
-                hasilDiv.innerHTML = `<strong>Nama:</strong> ${siswa.nama}<br>
-                                      <strong>Status Tugas:</strong> <span class="${siswa.status == 'Belum' ? 'belum' : 'sudah'}">${siswa.status}</span>`;
+            const siswa = data.find(s => s.nis === nis.trim());
+
+            loading.style.display = "none";
+            hasilDiv.style.display = "block";
+
+            if (siswa) {
+                const statusClass = (siswa.status.toLowerCase().includes("belum")) ? "belum" : "sudah";
+                hasilDiv.innerHTML = `
+                    <div class="info-nama">Nama: ${siswa.nama}</div>
+                    <div>Status Tugas Informatika:</div>
+                    <div class="status-box ${statusClass}">${siswa.status}</div>
+                `;
+                hasilDiv.style.backgroundColor = "#f9f9f9";
             } else {
-                hasilDiv.innerHTML = "<span class='belum'>Data tidak ditemukan.</span>";
+                hasilDiv.innerHTML = `<div style="color:red; text-align:center;">Data NIS ${nis} tidak ditemukan!</div>`;
+                hasilDiv.style.backgroundColor = "#fff5f5";
             }
+        } catch (error) {
+            loading.style.display = "none";
+            alert("Terjadi kesalahan koneksi. Pastikan URL Apps Script sudah benar.");
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
