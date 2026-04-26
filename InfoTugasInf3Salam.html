@@ -22,8 +22,9 @@
         th, td { border: 1px solid #dfe6e9; padding: 12px; text-align: left; font-size: 15px; }
         th { background-color: #f8f9fa; color: #636e72; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; }
         .status-cek { font-weight: bold; text-align: center; }
-        .sudah { color: #27ae60; background: #eafaf1; }
-        .belum { color: #e74c3c; background: #fdedec; }
+        .sudah, .selesai { color: #27ae60; background: #eafaf1; }
+        .belum, .proses { color: #e67e22; background: #fef5e7; }
+        .belum-dikerjakan { color: #e74c3c; background: #fdedec; }
     </style>
 </head>
 <body>
@@ -53,7 +54,9 @@
         const hasilDiv = document.getElementById('hasil');
         const loading = document.getElementById('loading');
         const isiTabel = document.getElementById('isiTabel');
-        const webAppUrl = 'https://script.google.com/macros/s/AKfycbxmvw6Boukuc9fO1MQA6-Qm58BWjFMOo1p5RrIA9PskwbqcyW2TeZcka3-hyyR8RlgV/exec';
+        
+        // URL Apps Script Terbaru Bapak
+        const webAppUrl = 'https://script.google.com/macros/s/AKfycbwVz3Enb9RsnBi90nkZUV8MAQmdEmCC4UEzB9JxKWSstZ9MZiEJbm5lQijg6B1sQrg/exec';
 
         if(!nisInput) return alert("Isi NIS dulu, Pak!");
 
@@ -70,10 +73,18 @@
             if(siswa) {
                 document.getElementById('namaSiswa').innerText = siswa.nama;
                 isiTabel.innerHTML = "";
+                
                 for (const [judul, status] of Object.entries(siswa.tugas)) {
                     const row = isiTabel.insertRow();
                     const s = (status || "").toLowerCase();
-                    row.innerHTML = `<td>${judul}</td><td class="status-cek ${s.includes('sudah') ? 'sudah' : 'belum'}">${status || 'Belum'}</td>`;
+                    
+                    // Menentukan class warna berdasarkan teks di spreadsheet
+                    let statusClass = "status-cek";
+                    if (s.includes("selesai") || s.includes("sudah")) statusClass += " selesai";
+                    else if (s.includes("proses")) statusClass += " proses";
+                    else if (s.includes("belum")) statusClass += " belum-dikerjakan";
+
+                    row.innerHTML = `<td>${judul}</td><td class="${statusClass}">${status || '-'}</td>`;
                 }
                 hasilDiv.style.display = "block";
             } else {
@@ -81,7 +92,7 @@
             }
         } catch (error) {
             loading.style.display = "none";
-            alert("Gagal mengambil data. Pastikan Apps Script sudah 'Anyone'.");
+            alert("Koneksi gagal. Pastikan Spreadsheet sudah dibagikan ke 'Anyone with the link' dan Apps Script sudah di-Deploy.");
         }
     }
 </script>
